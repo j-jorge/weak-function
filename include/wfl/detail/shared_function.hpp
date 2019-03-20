@@ -31,7 +31,7 @@ namespace wfl
         function_allocator::instance().add_one( m_handle );
       }
   
-      explicit shared_function( std::function< void( Args... ) > f )
+      explicit shared_function( function_type f )
         : m_handle
           ( function_allocator::instance().allocate( std::move( f ) ) )
       {
@@ -55,16 +55,32 @@ namespace wfl
         if ( this == &that )
           return *this;
 
-        function_allocator::instance().template release_one< function_type >
-          ( m_handle );
+        auto& allocator( function_allocator::instance() );
+        allocator.template release_one< function_type >( m_handle );
       
         m_handle = that.m_handle;
       
-        function_allocator::instance().add_one( m_handle );
+        allocator.add_one( m_handle );
     
         return *this;
       }
+
+      void reset()
+      {
+        auto& allocator( function_allocator::instance() );
+        allocator.template release_one< function_type >( m_handle );
+
+        m_handle = typename function_allocator::allocation_handle();
+      }
   
+      void reset( function_type f )
+      {
+        auto& allocator( function_allocator::instance() );
+        allocator.template release_one< function_type >( m_handle );
+
+        m_handle = allocator.allocate( std::move( f ) );
+      }
+      
     private:
       typename function_allocator::allocation_handle m_handle;
     };

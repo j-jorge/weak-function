@@ -83,6 +83,61 @@ TEST( wfl_weak_function, std_function_from_weak_function )
   EXPECT_EQ( 1, call_count );
 }
 
+TEST( wfl_weak_function, reset )
+{
+  int call_count( 0 );
+  
+  wfl::shared_function< void() > shared
+    ( [ & ]() -> void
+      {
+        ++call_count;
+      } );
+
+  const wfl::weak_function< void() > weak( shared );
+  
+  EXPECT_EQ( 0, call_count );
+    
+  weak();
+  EXPECT_EQ( 1, call_count );
+
+  shared.reset();
+  weak();
+  EXPECT_EQ( 1, call_count );
+}
+
+TEST( wfl_weak_function, reset_replace )
+{
+  int call_count_1( 0 );
+  
+  wfl::shared_function< void() > shared
+    ( [ & ]() -> void
+      {
+        ++call_count_1;
+      } );
+
+  const wfl::weak_function< void() > weak( shared );
+  
+  EXPECT_EQ( 0, call_count_1 );
+    
+  weak();
+  EXPECT_EQ( 1, call_count_1 );
+
+  int call_count_2( 0 );
+  shared.reset
+    ( [ & ]() -> void
+      {
+        ++call_count_2;
+      } );
+  
+  weak();
+  EXPECT_EQ( 1, call_count_1 );
+  EXPECT_EQ( 0, call_count_2 );
+
+  shared();
+  EXPECT_EQ( 1, call_count_1 );
+  EXPECT_EQ( 1, call_count_2 );
+}
+
 TEST( wfl_weak_function, weak_function_stays_valid_until_last_shared_is_dead )
 {
   int call_count( 0 );
