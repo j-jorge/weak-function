@@ -223,3 +223,55 @@ TEST( wfl_weak_function, weak_functions_from_independent_threads )
     t.join();
 }
 
+TEST( wfl_weak_function, assign_during_call )
+{
+  int shared_1_call_count( 0 );
+  wfl::shared_function< void() > shared_1
+    ( [&]() -> void
+      {
+        ++shared_1_call_count;
+      } );
+  
+  wfl::weak_function< void() > weak;
+  
+  int shared_2_call_count( 0 );
+  wfl::shared_function< void() > shared_2
+    ( [&]() -> void
+      {
+        weak = shared_1;
+        ++shared_2_call_count;
+      } );
+
+  weak = shared_2;
+  weak();
+
+  EXPECT_EQ( 0, shared_1_call_count );
+  EXPECT_EQ( 1, shared_2_call_count );
+
+  weak();
+
+  EXPECT_EQ( 1, shared_1_call_count );
+  EXPECT_EQ( 1, shared_2_call_count );
+}
+
+TEST( wfl_weak_function, assign_same_during_call )
+{
+  int shared_call_count( 0 );
+  wfl::weak_function< void() > weak;
+
+  wfl::shared_function< void() > shared
+    ( [&]() -> void
+      {
+        ++shared_call_count;
+        weak = shared;
+      } );
+
+  weak = shared;
+  weak();
+
+  EXPECT_EQ( 1, shared_call_count );
+
+  weak();
+
+  EXPECT_EQ( 2, shared_call_count );
+}
