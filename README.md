@@ -1,10 +1,27 @@
-Weak Delegate Library is a C++ 11 library providing a solution for the
-problem of passing references to functions around, that may be
-destroyed before their call.
+Weak Function Library is a C++ 11 library providing a solution to
+passing around references to functions that may be destroyed before
+their call.
 
+- [Quick Start](#quick-start)
 - [Usage Example](#usage-example)
 - [Building](#building)
 - [Library's Content](#librarys-content)
+- [Why not use a signal/slot library?](#why-not-use-a-signalslot-library)
+
+# Quick Start
+
+1. Declare a `wfl::shared_function< Signature >` to hold a reference to
+the function that may be destroyed.
+
+2. Declare a `wfl::weak_function< Signature >` on the caller side.
+
+3. Assign the `shared_function` to the `weak_function`.
+
+4. Call the `weak_function` when you need it.
+
+Bonus: Use `wfl::mt::shared_function< Signature >` and
+`wfl::mt::weak_function< Signature >` if the call occurs in another
+thread.
 
 # Usage Example
 
@@ -69,6 +86,18 @@ int main()
 }
 ```
 
+The output of this program is
+```
+sending 'Hello'
+sending 'Hello, world'
+Second message sent.
+```
+
+As expected, the first shared function which should have printed
+`First message sent` is not called since it has been destroyed before
+the actual call. On the caller side no special handling is needed
+before the call.
+
 # Building
 
 The CMake scripts are located in the `cmake` directory.
@@ -82,15 +111,15 @@ make
 
 The following arguments can be passed to CMake:
 
-- `WDL_CMAKE_PACKAGE_ENABLED=ON/OFF` controls whether the CMake
+- `WFL_CMAKE_PACKAGE_ENABLED=ON/OFF` controls whether the CMake
   script allowing to import the library in another project must be
   installed or not. Default is `ON`.
-- `WDL_DEBUG=ON/OFF` controls the activation of debugging code
+- `WFL_DEBUG=ON/OFF` controls the activation of debugging code
   in the library. It is a developer feature, you probably won't want
   it. Default is `OFF`.
-- `WDL_EXAMPLES_ENABLED=ON/OFF` controls the build of the example
-  programs.
-- `WDL_TESTING_ENABLED=ON/OFF` controls the build of the unit
+- `WFL_EXAMPLES_ENABLED=ON/OFF` controls the build of the example
+  programs. Default is `OFF`.
+- `WFL_TESTING_ENABLED=ON/OFF` controls the build of the unit
   tests. Default value is `ON`. You will need
   [Google Test](https://github.com/google/googletest) for this.
 
@@ -146,7 +175,7 @@ private:
 };
 ```
 
-Then keep going without wondering if the observer dies befor the observed.
+Then keep going without wondering if the observer dies before the observed.
 
 # Why not use a signal/slot library?
 
@@ -180,3 +209,27 @@ boost::signals2::connection message_handler::send_message
   return result;
 }
 ```
+
+This kind of code feels overcomplicated and raises several questions:
+
+1. Why using a signal designed to store several callbacks when only
+   one will ever be assigned?
+   
+2. Do you really need to pay a dynamic allocation for every callback?
+
+3. Boost.Signals2 is thread safe by default. If your app is
+single-threaded, why do you have to pay for the synchronization?
+
+Also, handling signal connections is quite error-prone. Here it is the
+caller's responsibility to store the resulting connection and to
+manually call `disconnect()` on it when the function passed as
+`on_sent` is destroyed.
+
+`wfl` aims to solve these issues. It is designed for a one-to-one
+relationship, does minimal allocations and provides optional thread
+safety.
+
+Also, with `wfl` the storing of the `wfl::shared_function` cannot be
+missed out and its disconnection is automatic. There is no way for a
+function to be called after being destroyed with this design.
+
