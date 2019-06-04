@@ -16,3 +16,9 @@ namespace wfl
       >;
   }
 }
+
+extern template class wfl::detail::weak_function
+<
+  void(),
+  wfl::detail::thread_safe_function_allocator
+>;
