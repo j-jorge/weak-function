@@ -275,3 +275,22 @@ TEST( wfl_weak_function, assign_same_during_call )
 
   EXPECT_EQ( 2, shared_call_count );
 }
+
+TEST( wfl_weak_function, argument )
+{
+  int argument_value( 0 );
+  
+  wfl::shared_function< void( int ) > shared
+    ( [ & ]( int value ) -> void
+      {
+        argument_value = value;
+      } );
+
+  const wfl::weak_function< void( int ) > weak( shared );
+  
+  EXPECT_EQ( 0, argument_value );
+
+  const int value( 24 );
+  weak( value );
+  EXPECT_EQ( value, argument_value );
+}

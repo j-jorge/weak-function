@@ -125,3 +125,20 @@ TEST( wfl_shared_function, std_function_from_shared_function )
   function();
   EXPECT_EQ( 1, call_count );
 }
+
+TEST( wfl_shared_function, argument )
+{
+  int argument_value( 0 );
+  
+  wfl::shared_function< void( int ) > shared
+    ( [ & ]( int value ) -> void
+      {
+        argument_value = value;
+      } );
+
+  EXPECT_EQ( 0, argument_value );
+
+  const int value( 24 );
+  shared( value );
+  EXPECT_EQ( value, argument_value );
+}

@@ -45,7 +45,7 @@ namespace wfl
       self_type& operator=( const self_type& ) = default;
       self_type& operator=( self_type&& f ) = default;
 
-      void operator()( Args&&... args ) const
+      void operator()( Args... args ) const
       {
         function_allocator::instance().safe_call
           ( m_handle, std::forward< Args >( args )... );

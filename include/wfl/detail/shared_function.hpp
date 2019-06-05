@@ -44,7 +44,7 @@ namespace wfl
           ( m_handle );
       }
 
-      void operator()( Args&&... args ) const
+      void operator()( Args... args ) const
       {
         function_allocator::instance().call
           ( m_handle, std::forward< Args >( args )... );
