@@ -47,8 +47,7 @@ namespace wfl
 
       void operator()( Args&&... args ) const
       {
-        return
-          function_allocator::instance().safe_call
+        function_allocator::instance().safe_call
           ( m_handle, std::forward< Args >( args )... );
       }
   
