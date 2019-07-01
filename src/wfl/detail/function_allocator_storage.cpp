@@ -33,11 +33,12 @@ const wfl::detail::function_allocator_storage::function_storage*
 wfl::detail::function_allocator_storage::grab
 ( const allocation_handle& handle ) const
 {
+  if ( handle.version == not_a_version )
+    return nullptr;
+  
   const block& block( m_blocks[ handle.id ] );
 
-  if ( ( handle.version != block.version )
-       || ( handle.version == not_a_version )
-       || ( block.ref_count == 0 ) )
+  if ( ( handle.version != block.version ) || ( block.ref_count == 0 ) )
     return nullptr;
 
   return &block.storage;
