@@ -21,7 +21,11 @@ namespace wfl
       };
   
       typedef
-      std::aligned_storage< sizeof( std::function< void() > ) >::type
+      std::aligned_storage
+      <
+        sizeof( std::function< void() > ),
+        alignof( std::function< void() > )
+      >::type
       function_storage;
 
       struct block

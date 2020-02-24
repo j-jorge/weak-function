@@ -105,6 +105,28 @@ TEST( wfl_weak_function, reset )
   EXPECT_EQ( 1, call_count );
 }
 
+TEST( wfl_weak_function, reset_during_call )
+{
+  int call_count( 0 );
+  
+  wfl::shared_function< void() > shared
+    ( [ & ]() -> void
+      {
+        ++call_count;
+        shared.reset();
+      } );
+
+  const wfl::weak_function< void() > weak( shared );
+  
+  EXPECT_EQ( 0, call_count );
+    
+  weak();
+  EXPECT_EQ( 1, call_count );
+
+  weak();
+  EXPECT_EQ( 1, call_count );
+}
+
 TEST( wfl_weak_function, reset_replace )
 {
   int call_count_1( 0 );

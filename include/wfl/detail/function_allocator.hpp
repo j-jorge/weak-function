@@ -17,6 +17,15 @@ namespace wfl
       template< typename... Args >
       allocation_handle allocate( std::function< void( Args... ) > f )
       {
+        static_assert
+          ( sizeof( std::function< void() > ) >= sizeof( f ),
+            "Function does not fit." );
+        static_assert
+          ( alignof( std::function< void() > )
+            % alignof( std::function< void( Args... ) > )
+            == 0,
+            "Function alignment does not match." );
+        
         const typename function_allocator_storage::allocation_result result
           ( m_storage.allocate() );
         
